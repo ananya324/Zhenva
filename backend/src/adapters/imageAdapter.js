@@ -2,7 +2,7 @@ const { extractTextFromImage } = require("../services/groqService");
 const fs = require("fs");
 const path = require("path");
 
-async function extractTextFromImageFile(filepath) {
+async function extractTextFromImageFile(filePath) {
     // read the uploaded file and convert to base64
     const absolutePath = path.resolve(filePath);
     const fileBuffer = fs.readFileSync(absolutePath);
@@ -27,3 +27,8 @@ async function extractTextFromImageFile(filepath) {
 }
 
 module.exports = { extractTextFromImageFile };
+
+//It takes an uploaded image file,
+//  extracts the text from it using Groq Vision, 
+// deletes the temporary image file,
+//  and returns the extracted text.

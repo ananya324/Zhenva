@@ -118,9 +118,23 @@ async function extractTextFromImage(base64Image, mediaType = "image/jpeg") {
 
   return response.choices[0].message.content.trim();
 }
+// ─── 4. Transcribe Audio (for Reels / voice messages) ────────────────────────
+async function transcribeAudio(base64Audio) {
+  // convert base64 back to buffer
+  const audioBuffer = Buffer.from(base64Audio, "base64");
+
+  const response = await groq.audio.transcriptions.create({
+    file: new File([audioBuffer], "audio.mp3", { type: "audio/mp3" }),
+    model: "whisper-large-v3",
+    response_format: "text",
+  });
+
+  return response;
+}
 
 module.exports = {
   extractClaims,
   generateVerdict,
   extractTextFromImage,
+  transcribeAudio,       
 };

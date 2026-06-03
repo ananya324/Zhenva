@@ -26,7 +26,6 @@ const resultSchema = new mongoose.Schema({
   originalInput: String,
   claims: [String],
   verdicts: [verdictSchema],
-  audioUrl: { type: String, default: null },
   createdAt: { type: Date, default: Date.now, expires: 86400 },
 });
 
