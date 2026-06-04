@@ -82,8 +82,8 @@ winget install yt-dlp
 ### Installation
 
 ```bash
-git clone https://github.com/yourusername/zhenva-backend
-cd zhenva-backend
+git clone https://github.com/ananya324/Zhenva.git
+cd backend
 npm install
 ```
 
