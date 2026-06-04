@@ -3,41 +3,40 @@ const { config } = require("../config");
 
 const groq = new Groq({ apiKey: config.groqKey });
 
-//Extract Claims-  takes raw text, returns array of checkable claims
-
+// ─── 1. Extract Claims ────────────────────────────────────────────────────────
 async function extractClaims(text) {
-    const response = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
-        messages: [{
-            role: "system",
-            content: `You are a fact-checking assistant. Your only job is to extract specific,verifiable factual claims from content.
-            Rules:
+  const response = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [
+      {
+        role: "system",
+        content: `You are a fact-checking assistant. Your only job is to extract specific, verifiable factual claims from content.
+Rules:
 - Only extract concrete facts that can be verified (not opinions, not feelings)
 - Maximum 5 claims
 - If no verifiable claims exist, return empty array
 - Return ONLY a raw JSON array of strings, no explanation, no markdown, no backticks`,
-        },
-        {
-            role: "user",
-            content: `Extract all verifiable factual claims from this content:\n\n${text}`,
-        },
-        ],
-        temperature: 0.1,       // low temperature = more consistent, less creative
-        max_tokens: 500,
-    });
+      },
+      {
+        role: "user",
+        content: `Extract all verifiable factual claims from this content:\n\n${text}`,
+      },
+    ],
+    temperature: 0.1,
+    max_tokens: 500,
+  });
 
-    const raw = response.choices[0].message.content.trim();
-    try {
-        return JSON.parse(raw);
-    } catch {
-        // if model returns something unexpected, extract what we can
-        console.error("extractClaims parse error:", raw);
-        return [];
-    }
+  const raw = response.choices[0].message.content.trim();
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    console.error("extractClaims parse error:", raw);
+    return [];
+  }
 }
 
-//Generate Verdict - take one claim + search results +user's language ,return verdict object
-
+// ─── 2. Generate Verdict ──────────────────────────────────────────────────────
 async function generateVerdict(claim, searchResults, language = "english") {
   const evidence = searchResults
     .map((r, i) => `[${i + 1}] ${r.title}: ${r.content}`)
@@ -78,7 +77,6 @@ Return a JSON object with exactly these keys:
     return JSON.parse(raw);
   } catch {
     console.error("generateVerdict parse error:", raw);
-    // return a safe fallback instead of crashing
     return {
       verdict: "UNVERIFIED",
       reason: "Could not analyze this claim at the moment.",
@@ -89,9 +87,7 @@ Return a JSON object with exactly these keys:
   }
 }
 
-//Extract Text from Image
-// takes base64 image, returns extracted text
-
+// ─── 3. Extract Text From Image ───────────────────────────────────────────────
 async function extractTextFromImage(base64Image, mediaType = "image/jpeg") {
   const response = await groq.chat.completions.create({
     model: "llama-3.2-11b-vision-preview",
@@ -118,9 +114,9 @@ async function extractTextFromImage(base64Image, mediaType = "image/jpeg") {
 
   return response.choices[0].message.content.trim();
 }
-// ─── 4. Transcribe Audio (for Reels / voice messages) ────────────────────────
+
+// ─── 4. Transcribe Audio ──────────────────────────────────────────────────────
 async function transcribeAudio(base64Audio) {
-  // convert base64 back to buffer
   const audioBuffer = Buffer.from(base64Audio, "base64");
 
   const response = await groq.audio.transcriptions.create({
@@ -136,5 +132,5 @@ module.exports = {
   extractClaims,
   generateVerdict,
   extractTextFromImage,
-  transcribeAudio,       
+  transcribeAudio,
 };

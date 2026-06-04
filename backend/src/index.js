@@ -4,7 +4,11 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
 const { config } = require("./config");
-const jobs = require("./workers/jobQueue");  
+const textRoutes = require("./routes/text.routes");
+const imageRoutes = require("./routes/image.routes");
+const videoRoutes = require("./routes/video.routes");
+require("./workers/jobQueue");  
+
 
 const app = express();
 
@@ -15,13 +19,10 @@ app.use(express.json({ limit: "10mb" }));
 app.use("/audio", express.static("audio"));
 app.use("/uploads", express.static("uploads"));
 
-const textRoutes = require("./routes/text.routes");
-const imageRoutes = require("./routes/image.routes");
-const videoRoutes = require("./routes/video.routes");
-
 app.use("/api/check/text", textRoutes);
 app.use("/api/check/image", imageRoutes);
 app.use("/api/check/video", videoRoutes);
+
 
 app.get("/health", (req, res) => {
   res.json({

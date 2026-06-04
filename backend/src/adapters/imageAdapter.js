@@ -1,4 +1,4 @@
-const { extractTextFromImage } = require("../services/groqService");
+const { extractTextFromImage } = require("../services/groqServices");
 const fs = require("fs");
 const path = require("path");
 
