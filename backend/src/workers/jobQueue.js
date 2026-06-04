@@ -55,7 +55,6 @@ videoQueue.process(async (job) => {
 videoQueue.on("completed",(job)=>{
     console.log(`Job ${job.data.jobId} completed`);
 });
-
 videoQueue.on("failed",(job,err)=>{
     console.error(`Job ${job.data.jobId} failed:`, err.message);
 });
