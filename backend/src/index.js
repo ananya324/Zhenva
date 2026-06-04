@@ -4,6 +4,7 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
 const { config } = require("./config");
+const jobs = require("./workers/jobQueue");  
 
 const app = express();
 
