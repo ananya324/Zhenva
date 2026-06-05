@@ -5,7 +5,7 @@ const client = tavily({ apiKey: config.tavilyKey });
 
 // trusted domains only — no random blogs or social media
 const TRUSTED_DOMAINS = [
-  // International health & science
+  
   "who.int",
   "nih.gov",
   "cdc.gov",
@@ -13,26 +13,25 @@ const TRUSTED_DOMAINS = [
   "nature.com",
   "science.org",
 
-  // Indian government
   "pib.gov.in",
   "mohfw.gov.in",
   "india.gov.in",
   "mygov.in",
 
-  // Indian fact-checkers
+  
   "boomlive.in",
   "altnews.in",
   "factchecker.in",
   "vishvasnews.com",
   "thequint.com",
 
-  // Reliable Indian news
+  
   "thehindu.com",
   "ndtv.com",
   "indianexpress.com",
   "pti.in",
 
-  // International news
+ 
   "bbc.com",
   "reuters.com",
   "apnews.com",

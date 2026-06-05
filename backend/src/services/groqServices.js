@@ -3,7 +3,6 @@ const { config } = require("../config");
 
 const groq = new Groq({ apiKey: config.groqKey });
 
-// ─── 1. Extract Claims ────────────────────────────────────────────────────────
 async function extractClaims(text) {
   const response = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
@@ -36,7 +35,6 @@ Rules:
   }
 }
 
-// ─── 2. Generate Verdict ──────────────────────────────────────────────────────
 async function generateVerdict(claim, searchResults, language = "english") {
   const evidence = searchResults
     .map((r, i) => `[${i + 1}] ${r.title}: ${r.content}`)
@@ -87,7 +85,6 @@ Return a JSON object with exactly these keys:
   }
 }
 
-// ─── 3. Extract Text From Image ───────────────────────────────────────────────
 async function extractTextFromImage(base64Image, mediaType = "image/jpeg") {
   const response = await groq.chat.completions.create({
     model: "llama-3.2-11b-vision-preview",
@@ -115,7 +112,6 @@ async function extractTextFromImage(base64Image, mediaType = "image/jpeg") {
   return response.choices[0].message.content.trim();
 }
 
-// ─── 4. Transcribe Audio ──────────────────────────────────────────────────────
 async function transcribeAudio(base64Audio) {
   const audioBuffer = Buffer.from(base64Audio, "base64");
 
