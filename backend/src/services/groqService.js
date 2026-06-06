@@ -4,35 +4,37 @@ const { config } = require("../config");
 const groq = new Groq({ apiKey: config.groqKey });
 
 async function extractClaims(text) {
-  const response = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [
-      {
-        role: "system",
-        content: `You are a fact-checking assistant. Your only job is to extract specific, verifiable factual claims from content.
+  return withRetry(async () => {
+    const response = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: `You are a fact-checking assistant. Your only job is to extract specific, verifiable factual claims from content.
 Rules:
 - Only extract concrete facts that can be verified (not opinions, not feelings)
 - Maximum 5 claims
 - If no verifiable claims exist, return empty array
 - Return ONLY a raw JSON array of strings, no explanation, no markdown, no backticks`,
-      },
-      {
-        role: "user",
-        content: `Extract all verifiable factual claims from this content:\n\n${text}`,
-      },
-    ],
-    temperature: 0.1,
-    max_tokens: 500,
-  });
+        },
+        {
+          role: "user",
+          content: `Extract all verifiable factual claims from this content:\n\n${text}`,
+        },
+      ],
+      temperature: 0.1,
+      max_tokens: 500,
+    });
 
-  const raw = response.choices[0].message.content.trim();
+    const raw = response.choices[0].message.content.trim();
 
-  try {
-    return JSON.parse(raw);
-  } catch {
-    console.error("extractClaims parse error:", raw);
-    return [];
-  }
+    try {
+      return JSON.parse(raw);
+    } catch {
+      console.error("extractClaims parse error:", raw);
+      return [];
+    }
+  })
 }
 
 async function generateVerdict(claim, searchResults, language = "english") {
@@ -61,7 +63,7 @@ Return a JSON object with exactly these keys:
   "reason": "one clear sentence in simple English explaining the verdict",
   "explanation": "same reason explained in ${language} language. STRICT RULES: If language is hindi, write ONLY in Devanagari script (हिंदी), no Roman/English words at all. If language is tamil, write ONLY in Tamil script. If language is telugu, write ONLY in Telugu script. If language is bengali, write ONLY in Bengali script. If language is marathi, write ONLY in Devanagari script. If language is english, write in simple English. Never mix scripts.",
   "confidence": "HIGH" or "MEDIUM" or "LOW",
-  "sources": ["url1", "url2"]
+  "sources": ["https://actualurl.com", "https://anotherurl.com"] — ONLY include real URLs starting with https://. Never include numbered references like [1] or [2]. If no real URLs are available, return an empty array [].
 }`,
       },
     ],
@@ -124,10 +126,28 @@ async function transcribeAudio(base64Audio) {
 
   return response;
 }
+// retry with delay on rate limit
+async function withRetry(fn, retries = 3, delayMs = 20000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const isRateLimit = err?.message?.includes("rate_limit_exceeded") ||
+        err?.message?.includes("429");
+      if (isRateLimit && i < retries - 1) {
+        console.log(`Rate limited. Waiting ${delayMs / 1000}s before retry ${i + 1}...`);
+        await new Promise((res) => setTimeout(res, delayMs));
+      } else {
+        throw err;
+      }
+    }
+  }
+}
 
 module.exports = {
   extractClaims,
   generateVerdict,
   extractTextFromImage,
   transcribeAudio,
+
 };

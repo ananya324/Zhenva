@@ -18,12 +18,13 @@ videoQueue.process(async (job) => {
         await Job.findByIdAndUpdate(jobId, { status: "processing" });
 
         const transcript = await extractTextFromVideo(url);
+        const truncated = transcript.slice(0, 3000);
 
         if (!transcript || transcript.trim().length < 10) {
             throw new Error("Could not extract any text from this video.");
         }
 
-        const claims = await detectClaims(transcript);
+        const claims = await detectClaims(truncated);
 
         if (claims.length === 0) {
             throw new Error("No verifiable claims found in this video.");
