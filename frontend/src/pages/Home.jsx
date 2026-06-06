@@ -65,24 +65,29 @@ export default function Home({ language, onChangeLanguage }) {
   }
 
   // ── Show video processing state ────────────────────────────────────────────
-  if (jobId) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="max-w-md w-full">
-          <Loader
-            message={
-              status === "processing"
-                ? t(language, "loaderVideo")
-                : t(language, "checking")
-            }
-          />
-          {jobError && (
-            <p className="text-red-500 text-sm text-center mt-4">{jobError}</p>
-          )}
-        </div>
+ if (jobId) {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="max-w-md w-full">
+        <Loader
+          language={language}
+          messageKey={status === "processing" ? "loaderVideo" : "loaderText"}
+        />
+        {jobError && (
+          <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+            <p className="text-red-600 text-sm">{jobError}</p>
+            <button
+              onClick={handleReset}
+              className="mt-3 text-sm text-blue-500 hover:underline"
+            >
+              Try again
+            </button>
+          </div>
+        )}
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   // ── Main home page ─────────────────────────────────────────────────────────
   return (

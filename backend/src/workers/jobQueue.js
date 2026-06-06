@@ -44,7 +44,7 @@ videoQueue.process(async (job) => {
             result,
         });
     }catch(err){
-        console.err("Job failed:",err.message);
+        console.error("Job failed:",err.message);
         await Job.findByIdAndUpdate(jobId,{
             status:"failed",
             error:err.message,

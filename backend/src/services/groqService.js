@@ -59,7 +59,7 @@ Return a JSON object with exactly these keys:
 {
   "verdict": "TRUE" or "FALSE" or "MISLEADING" or "UNVERIFIED",
   "reason": "one clear sentence in simple English explaining the verdict",
-  "explanation": "same reason explained simply in ${language} language. If language is english, same as reason. Use simple everyday words, not technical terms.",
+  "explanation": "same reason explained in ${language} language. STRICT RULES: If language is hindi, write ONLY in Devanagari script (हिंदी), no Roman/English words at all. If language is tamil, write ONLY in Tamil script. If language is telugu, write ONLY in Telugu script. If language is bengali, write ONLY in Bengali script. If language is marathi, write ONLY in Devanagari script. If language is english, write in simple English. Never mix scripts.",
   "confidence": "HIGH" or "MEDIUM" or "LOW",
   "sources": ["url1", "url2"]
 }`,
@@ -87,7 +87,8 @@ Return a JSON object with exactly these keys:
 
 async function extractTextFromImage(base64Image, mediaType = "image/jpeg") {
   const response = await groq.chat.completions.create({
-    model: "llama-3.2-11b-vision-preview",
+    model: "meta-llama/llama-4-scout-17b-16e-instruct",
+
     messages: [
       {
         role: "user",

@@ -12,7 +12,7 @@ export function useJobPoller(jobId) {
 
         intervalRef.current = setInterval(async () => {
             try {
-                const data = await getJobStatus(jonId);
+                const data = await getJobStatus(jobId);
 
                 setStatus(data.status);
 

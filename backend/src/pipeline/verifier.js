@@ -1,5 +1,5 @@
 const { searchTrustedSources } = require("../services/searchService");
-const { generateVerdict } = require("../services/groqServices");
+const { generateVerdict } = require("../services/groqService");
 
 async function verifyClaims(claims, language = "english") {
     if (!claims || claims.length === 0) {

@@ -1,4 +1,4 @@
-const { extractClaims } = require("../services/groqServices");
+const { extractClaims } = require("../services/groqService");
 
 // split text into individual sentences
 function splitIntoSentences(text) {
