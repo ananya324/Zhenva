@@ -1,67 +1,164 @@
-# Zhenva — Fact-Check Backend
+# Zhenva — AI-Powered Fact Checking Platform
 
-AI-powered fact-checking API for Indian users. Paste a WhatsApp message, upload a screenshot, or drop a video link — get a verdict in your language.
+A fact-checking web app built for non-tech-savvy Indian users. Paste a WhatsApp forward, upload a screenshot, or drop a video link — get a clear verdict in your language, with audio playback.
+
+---
+
+## The Problem
+
+Every day, millions of Indians receive misinformation through WhatsApp forwards, Instagram reels, and Facebook posts. While younger users can verify claims using AI tools, older and less tech-savvy users have no easy way to do so.
+
+Zhenva solves this with a one-step solution — paste content, get a verified answer, understand it in your language.
+
+---
+
+## Features
+
+- **Text fact-checking** — paste any WhatsApp message or news headline
+- **Image fact-checking** — upload a screenshot, AI extracts and verifies the text
+- **Video fact-checking** — paste a YouTube, Instagram, or Facebook link
+- **6 Indian languages** — English, Hindi, Bengali, Tamil, Telugu, Marathi
+- **Audio playback** — listen to the explanation instead of reading
+- **Trusted sources only** — WHO, PIB, BBC, NDTV, BoomLive, and more
+- **Two-pass claim detection** — catches claims that single-pass AI misses
+- **Smart caching** — same viral forward checked once, served instantly to everyone after
 
 ---
 
 ## Tech Stack
 
+### Backend
 | Layer | Tool |
 |---|---|
-| Framework | Express.js (CommonJS) |
+| Framework | Express.js (Node.js, CommonJS) |
 | Database | MongoDB Atlas |
-| Cache / Queue | Redis + Bull |
-| AI Brain | Groq (LLaMA 3.3 70B + Whisper) |
-| Web Search | Tavily |
-| Image OCR | Groq Vision (LLaMA 3.2 11B) |
+| Cache / Queue | Redis (Upstash) + Bull |
+| AI Brain | Groq (LLaMA 3.3 70B + Whisper Large V3) |
+| Image OCR | Groq Vision (LLaMA 4 Scout) |
+| Web Search | Tavily API |
 | Video Transcription | YouTube Transcript API + yt-dlp |
+
+### Frontend
+| Layer | Tool |
+|---|---|
+| Framework | React + Vite |
+| Styling | Tailwind CSS |
+| Icons | Lucide React |
+| HTTP | Axios |
+| Audio | Web Speech API (browser built-in) |
 
 ---
 
 ## Project Structure
 
 ```
-factcheck-backend/
+zhenva/
 │
-├── src/
-│   ├── index.js                        # Express app, DB connection, middleware
-│   ├── config.js                       # All env vars in one place
+├── backend/
+│   ├── src/
+│   │   ├── index.js                  # Express app, MongoDB connection, middleware
+│   │   ├── config.js                 # All env vars in one place
+│   │   │
+│   │   ├── routes/
+│   │   │   ├── text.routes.js        # POST /api/check/text
+│   │   │   ├── image.routes.js       # POST /api/check/image
+│   │   │   └── video.routes.js       # POST /api/check/video
+│   │   │
+│   │   ├── controllers/
+│   │   │   ├── text.controller.js
+│   │   │   ├── image.controller.js
+│   │   │   └── video.controller.js
+│   │   │
+│   │   ├── pipeline/
+│   │   │   ├── claimDetector.js      # two-pass claim extraction
+│   │   │   ├── verifier.js           # search + verdict generation
+│   │   │   └── formatter.js          # shapes final response
+│   │   │
+│   │   ├── adapters/
+│   │   │   ├── imageAdapter.js       # image → text via Groq Vision
+│   │   │   └── videoAdapter.js       # URL → transcript
+│   │   │
+│   │   ├── services/
+│   │   │   ├── groqService.js        # all Groq API calls
+│   │   │   └── searchService.js      # Tavily search + domain filtering
+│   │   │
+│   │   ├── workers/
+│   │   │   └── jobQueue.js           # Bull queue for async video jobs
+│   │   │
+│   │   └── models/
+│   │       ├── Result.model.js       # cached verdicts (TTL 24hrs)
+│   │       └── Job.model.js          # async job status
 │   │
-│   ├── routes/
-│   │   ├── text.routes.js              # POST /api/check/text
-│   │   ├── image.routes.js             # POST /api/check/image
-│   │   └── video.routes.js             # POST /api/check/video + GET /api/check/video/job/:jobId
-│   │
-│   ├── controllers/
-│   │   ├── text.controller.js
-│   │   ├── image.controller.js
-│   │   └── video.controller.js
-│   │
-│   ├── pipeline/
-│   │   ├── claimDetector.js            # two-pass claim extraction (full text + sentence-by-sentence)
-│   │   ├── verifier.js                 # claims + search results → verdict
-│   │   └── formatter.js               # verdict → final response shape
-│   │
-│   ├── adapters/
-│   │   ├── imageAdapter.js             # screenshot → text via Groq Vision
-│   │   └── videoAdapter.js             # URL → transcript via yt-dlp / YouTube API
-│   │
-│   ├── services/
-│   │   ├── groqService.js              # claim extraction, verdict generation, OCR, transcription
-│   │   └── searchService.js            # Tavily search with trusted domain filtering
-│   │
-│   ├── workers/
-│   │   └── jobQueue.js                 # Bull queue for async video processing
-│   │
-│   └── models/
-│       ├── Result.model.js             # cached verdicts (TTL 24hrs)
-│       └── Job.model.js                # async job status tracking
+│   ├── uploads/                      # temp image/audio storage
+│   ├── .env
+│   └── package.json
 │
-├── uploads/                            # temp storage for uploaded images (auto-cleaned)
-├── .env
-├── .gitignore
-└── package.json
+└── frontend/
+    ├── src/
+    │   ├── pages/
+    │   │   ├── Landing.jsx           # language selection
+    │   │   ├── Home.jsx              # main input page
+    │   │   └── Result.jsx            # verdict display
+    │   │
+    │   ├── components/
+    │   │   ├── InputTabs.jsx         # text/image/video tab switcher
+    │   │   ├── TextInput.jsx
+    │   │   ├── ImageInput.jsx
+    │   │   ├── VideoInput.jsx
+    │   │   ├── AudioPlayer.jsx       # Web Speech API player
+    │   │   ├── SourceList.jsx
+    │   │   ├── VerdictCard.jsx
+    │   │   ├── ClaimList.jsx
+    │   │   └── Loader.jsx
+    │   │
+    │   ├── hooks/
+    │   │   ├── useLanguage.js        # localStorage language persistence
+    │   │   └── useJobPoller.js       # polls job status every 3s
+    │   │
+    │   ├── services/
+    │   │   └── api.js                # all axios calls
+    │   │
+    │   └── utils/
+    │       ├── translations.js       # all UI strings in 6 languages
+    │       └── speech.js             # Web Speech API wrapper
+    │
+    ├── .env
+    └── package.json
 ```
+
+---
+
+## How It Works
+
+```
+User input (text / image / video)
+              ↓
+         [ Adapter ]
+  image → Groq Vision extracts text
+  video → YouTube API or yt-dlp + Whisper gets transcript
+  text  → passes through directly
+              ↓
+     [ Claim Detector — 2 passes ]
+  Pass 1: full text → Groq extracts all claims
+  Pass 2: sentence by sentence → Groq classifies each
+  Merge + deduplicate → final claim list
+              ↓
+        [ Verifier ]
+  For each claim (parallel):
+    → Tavily searches trusted sources (last 30 days)
+    → Groq reads evidence → verdict + explanation in user's language
+              ↓
+       [ Formatter ]
+  Combines all explanations into one paragraph
+  Determines overall verdict (FALSE > MISLEADING > UNVERIFIED > TRUE)
+  Collects all unique sources
+              ↓
+  Saved to MongoDB (TTL 24hrs) → cached for next user
+              ↓
+     Returned to frontend
+```
+
+Video jobs run asynchronously via Bull + Redis. Frontend polls every 3 seconds.
 
 ---
 
@@ -71,30 +168,28 @@ factcheck-backend/
 
 - Node.js 18+
 - MongoDB Atlas account (free tier)
-- Redis running locally or via Upstash (free tier)
+- Upstash Redis account (free tier)
+- Groq API key (free)
+- Tavily API key (free tier)
 - yt-dlp installed globally
 
-Install yt-dlp on Windows:
+**Install yt-dlp on Windows:**
 ```bash
 winget install yt-dlp
 ```
 
-### Installation
+### Backend Setup
 
 ```bash
-git clone https://github.com/ananya324/Zhenva.git
 cd backend
 npm install
 ```
 
-### Environment Variables
-
-Create a `.env` file in the root:
-
+Create `.env` in `backend/`:
 ```env
 PORT=5000
 MONGODB_URI=mongodb+srv://your_atlas_connection_string
-REDIS_URL=redis://localhost:6379
+REDIS_URL=rediss://default:xxxxx@xxxx.upstash.io:6379
 GROQ_API_KEY=your_groq_key
 TAVILY_API_KEY=your_tavily_key
 ```
@@ -102,17 +197,42 @@ TAVILY_API_KEY=your_tavily_key
 | Variable | Where to get it |
 |---|---|
 | `MONGODB_URI` | [cloud.mongodb.com](https://cloud.mongodb.com) → Connect → Drivers |
+| `REDIS_URL` | [upstash.com](https://upstash.com) → Create Database → REST URL |
 | `GROQ_API_KEY` | [console.groq.com](https://console.groq.com) → API Keys |
 | `TAVILY_API_KEY` | [app.tavily.com](https://app.tavily.com) → API Keys |
 
-### Run
+```bash
+npm run dev
+```
+
+Should see:
+```
+MongoDB connected
+Server running on port 5000
+```
+
+### Frontend Setup
 
 ```bash
-# development
-npm run dev
+cd frontend
+npm install
+```
 
-# production
-npm start
+Create `.env` in `frontend/`:
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+```bash
+npm run dev
+```
+
+Opens on `http://localhost:5173`
+
+To open on phone (same WiFi):
+```bash
+# vite.config.js already has host: true
+# use the Network URL shown in terminal
 ```
 
 ---
@@ -120,63 +240,21 @@ npm start
 ## API Reference
 
 ### POST `/api/check/text`
-
-Fact-check a WhatsApp message or any text.
-
-**Request:**
 ```json
 {
-  "text": "Drinking hot water every hour kills all viruses.",
+  "text": "Drinking hot water kills all viruses.",
   "language": "hindi"
 }
 ```
 
-**Response:**
-```json
-{
-  "source": "fresh",
-  "overallVerdict": "FALSE",
-  "emoji": "❌",
-  "color": "red",
-  "language": "hindi",
-  "inputType": "text",
-  "claims": [
-    {
-      "claim": "Drinking hot water kills all viruses",
-      "verdict": "FALSE",
-      "emoji": "❌",
-      "explanation": "Garam paani peene se sharir ke andar ke virus nahi marte.",
-      "confidence": "HIGH",
-      "sources": ["https://who.int/..."]
-    }
-  ],
-  "checkedAt": "2025-06-03T12:00:00.000Z"
-}
-```
-
----
-
 ### POST `/api/check/image`
-
-Fact-check a screenshot. Accepts `multipart/form-data`.
-
-**Request:**
 ```
 Content-Type: multipart/form-data
-
-image: <file>           (JPG, PNG, WEBP — max 5MB)
+image: <file>        (JPG, PNG, WEBP — max 5MB)
 language: "tamil"
 ```
 
-**Response:** Same shape as text response.
-
----
-
 ### POST `/api/check/video`
-
-Fact-check a YouTube, Instagram, or Facebook video.
-
-**Request:**
 ```json
 {
   "url": "https://www.youtube.com/watch?v=xxxxx",
@@ -184,52 +262,35 @@ Fact-check a YouTube, Instagram, or Facebook video.
 }
 ```
 
-**Response (immediate):**
-```json
-{
-  "jobId": "64f1a2b3c4d5e6f7a8b9c0d1",
-  "status": "pending",
-  "message": "Video is being processed. Poll /api/check/video/job/:jobId for result."
-}
-```
-
----
+Returns immediately with `jobId`. Poll for result:
 
 ### GET `/api/check/video/job/:jobId`
-
-Poll for video job status.
-
-**Response (processing):**
 ```json
-{ "status": "processing" }
+{ "status": "pending" | "processing" | "done" | "failed" }
 ```
 
-**Response (done):**
+### GET `/health`
 ```json
-{
-  "status": "done",
-  "result": { ...same shape as text response... }
-}
-```
-
-**Response (failed):**
-```json
-{
-  "status": "failed",
-  "error": "Could not extract any text from this video."
-}
+{ "status": "ok", "mongo": "connected" }
 ```
 
 ---
 
-### GET `/health`
+## Response Shape
 
-Check server and database status.
+All three input types return the same structure:
 
 ```json
 {
-  "status": "ok",
-  "mongo": "connected"
+  "overallVerdict": "FALSE",
+  "language": "hindi",
+  "inputType": "text",
+  "overallExplanation": "गर्म पानी पीने से शरीर के अंदर के वायरस नहीं मरते...",
+  "sources": [
+    "https://www.who.int/...",
+    "https://www.bbc.com/hindi/..."
+  ],
+  "checkedAt": "2026-06-07T12:00:00.000Z"
 }
 ```
 
@@ -237,70 +298,33 @@ Check server and database status.
 
 ## Supported Languages
 
-| Code | Language |
-|---|---|
-| `english` | English |
-| `hindi` | हिंदी |
-| `bengali` | বাংলা |
-| `tamil` | தமிழ் |
-| `telugu` | తెలుగు |
-| `marathi` | मराठी |
-
-Pass any of these as the `language` field in your request. The explanation will be returned in that language. Audio playback is handled on the frontend via the Web Speech API — no backend audio generation needed.
+| Code | Language | Script |
+|---|---|---|
+| `english` | English | Latin |
+| `hindi` | हिंदी | Devanagari |
+| `bengali` | বাংলা | Bengali |
+| `tamil` | தமிழ் | Tamil |
+| `telugu` | తెలుగు | Telugu |
+| `marathi` | मराठी | Devanagari |
 
 ---
 
-## How It Works
+## Two-Pass Claim Detection
 
-Every input type goes through the same three-step pipeline:
+Single-pass LLM extraction misses claims in long or multi-topic messages.
 
+**Example input:**
 ```
-Input (text / image / video)
-        ↓
-   [ Adapter ]
-   image → extract text via Groq Vision
-   video → get transcript via yt-dlp / YouTube API
-   text  → pass through directly
-        ↓
-   [ claimDetector — two passes ]
-   Pass 1: send full text to Groq → extract all claims
-   Pass 2: split into sentences → classify each sentence individually
-   Merge both passes, deduplicate → final claim list
-        ↓
-   [ verifier ]
-   for each claim (in parallel):
-     → search Tavily (trusted sources, last 30 days)
-     → send claim + evidence to Groq
-     → get verdict + explanation in user's language
-        ↓
-   [ formatter ]
-   shapes everything into final response
-   determines overall verdict across all claims
-   (FALSE > MISLEADING > UNVERIFIED > TRUE)
-        ↓
-   saved to MongoDB (TTL 24hrs)
-   same viral message = served from cache instantly
+"The government announced ₹5000 for every citizen 
+and drinking hot water kills all viruses."
 ```
 
-Video jobs run asynchronously via Bull + Redis. All other inputs are synchronous.
-
----
-
-## Claim Detection — Two Pass System
-
-Single-pass LLM extraction misses claims when messages are long or contain multiple unrelated facts crammed into one sentence.
-
-Example input:
-```
-"The government announced ₹5000 for every citizen and drinking hot water kills all viruses."
-```
-
-Single pass might return:
+**Single pass might return:**
 ```json
 ["Drinking hot water kills all viruses"]
 ```
 
-Two pass returns:
+**Two-pass returns:**
 ```json
 [
   "The government announced ₹5000 for every citizen",
@@ -308,17 +332,13 @@ Two pass returns:
 ]
 ```
 
-**Pass 1** — sends full text to Groq, asks for all verifiable claims.
-
-**Pass 2** — splits text into sentences, asks Groq to classify each sentence individually. When a sentence is isolated, Groq can't skip it.
-
-Both results are merged and deduplicated. Maximum 5 claims per input.
+Pass 1 sends the full text to Groq. Pass 2 splits into sentences and classifies each individually. Both run in parallel, results are merged and deduplicated.
 
 ---
 
 ## Trusted Sources
 
-Search results are filtered to these domains only. No random blogs, no social media, no SEO spam.
+Search results are filtered to trusted domains only:
 
 **Indian Fact-Checkers:** boomlive.in, altnews.in, factchecker.in, vishvasnews.com, thequint.com
 
@@ -326,33 +346,61 @@ Search results are filtered to these domains only. No random blogs, no social me
 
 **Indian News:** thehindu.com, ndtv.com, indianexpress.com, pti.in
 
-**International Health & Science:** who.int, nih.gov, cdc.gov, pubmed.ncbi.nlm.nih.gov, nature.com
+**International Health:** who.int, nih.gov, cdc.gov, pubmed.ncbi.nlm.nih.gov
 
 **International News:** bbc.com, reuters.com, apnews.com
 
-Search is biased toward the last 30 days to catch recently viral misinformation.
+Tavily search is biased toward the last 30 days to catch recently viral misinformation.
 
 ---
 
 ## Caching
 
-Results are cached in MongoDB for 24 hours using an MD5 hash of the input text. If the same viral message is submitted by multiple users, the pipeline runs once and everyone after gets the cached result instantly.
+Results cached in MongoDB for 24 hours using MD5 hash of input text. Same viral forward sent by 100 users = pipeline runs once, everyone else gets instant cached result.
 
-For images, the hash is computed on the **extracted text** not the image file — so two different screenshots of the same claim return the same cached result.
+For images, hash is computed on extracted text — two different screenshots of the same claim return the same cached result.
 
 ---
 
 ## Audio Playback
 
-Text-to-speech is handled entirely on the frontend using the browser's built-in **Web Speech API** — no backend audio generation, no storage, no cost. The backend returns the `explanation` field in the user's language. The frontend reads it aloud on button press.
-
-This works well for Indian languages. Android devices have high quality Hindi, Tamil, Telugu, Marathi, and Bengali voices built in via Google's TTS engine.
+Text-to-speech handled by the browser's built-in Web Speech API. Zero cost, zero backend storage. Works on Android for all 6 languages via Google TTS engine. On Windows, Hindi and English work reliably; other languages show "Audio not available" if voice not installed.
 
 ---
 
-## Notes
+## Known Limitations
 
-- yt-dlp may break periodically when Instagram/Facebook update their systems. Run `winget upgrade yt-dlp` to fix.
-- Groq free tier has rate limits. For high traffic, add retry logic with exponential backoff in `groqService.js`.
-- Tavily free tier allows 1000 searches/month — enough for development and early users.
-- Always whitelist your IP in MongoDB Atlas Network Access or the server will hang on connection silently.
+- Instagram/Facebook Reels may fail — Meta actively blocks scrapers. yt-dlp works but breaks periodically. Run `winget upgrade yt-dlp` to fix.
+- YouTube videos without captions (CC) cannot be transcribed.
+- Groq free tier has rate limits (12k tokens/minute). Long video transcripts may hit limits — handled with automatic retry logic.
+- Audio for Bengali, Tamil, Telugu, Marathi requires Google TTS voices installed on device — works on Android, limited on Windows.
+
+---
+
+## Deployment
+
+### Backend → Render
+1. Push backend to GitHub
+2. Create new Web Service on [render.com](https://render.com)
+3. Add all `.env` variables in Render dashboard
+4. Build command: `npm install`
+5. Start command: `node src/index.js`
+
+### Frontend → Vercel
+1. Push frontend to GitHub
+2. Import on [vercel.com](https://vercel.com)
+3. Add `VITE_API_URL=https://your-render-url.onrender.com/api`
+4. Deploy
+
+---
+
+## Built With
+
+This project was built as a solution to the real problem of misinformation spreading through WhatsApp and social media in India, targeting users who lack the technical knowledge to verify claims themselves.
+
+**Key architectural decisions:**
+- Single pipeline for all input types — adapters normalize inputs to text, then the same claimDetector → verifier → formatter runs for everyone
+- Async video processing via Bull — HTTP requests don't hang waiting for slow yt-dlp downloads
+- Language passed through the entire pipeline — Groq generates the explanation directly in the user's language, no separate translation step
+- Trusted domain filtering in Tavily — prevents AI from citing unreliable sources
+- MD5 caching — viral misinformation is repetitive by nature; caching makes the system faster and cheaper at scale
