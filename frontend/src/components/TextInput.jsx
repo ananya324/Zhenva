@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { t } from "../utils/translations";
 
-export default function TextInput({
-  onSubmit,
-  loading,
-  language,
-}) {
+export default function TextInput({ onSubmit, loading, language }) {
   const [text, setText] = useState("");
 
   function handleSubmit() {
@@ -20,7 +16,7 @@ export default function TextInput({
         onChange={(e) => setText(e.target.value)}
         placeholder={t(language, "textPlaceholder")}
         rows={6}
-        className="w-full p-4 rounded-xl border-2 border-gray-100 focus:border-blue-400 focus:outline-none resize-none text-gray-700 text-sm bg-white placeholder-gray-300"
+        className="w-full p-4 rounded-2xl border-2 border-orange-100 focus:border-[#FF6B00] focus:outline-none resize-none text-gray-700 text-sm bg-orange-50 placeholder-gray-300"
       />
 
       <div className="flex items-center justify-between">
@@ -31,11 +27,9 @@ export default function TextInput({
         <button
           onClick={handleSubmit}
           disabled={text.trim().length < 10 || loading}
-          className="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-200 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-all"
+          className="px-6 py-2.5 bg-[#FF6B00] hover:bg-[#E05A00] disabled:bg-gray-200 disabled:cursor-not-allowed text-white text-sm font-bold rounded-2xl transition-all shadow-sm shadow-orange-200"
         >
-          {loading
-            ? t(language, "checking")
-            : t(language, "checkNow")}
+          {loading ? t(language, "checking") : t(language, "checkNow")}
         </button>
       </div>
     </div>

@@ -12,10 +12,8 @@ export default function Home({ language, onChangeLanguage }) {
   const [error, setError] = useState(null);
   const [jobId, setJobId] = useState(null);
 
-  // polls backend every 3s when jobId is set (video only)
   const { status, result: jobResult, error: jobError } = useJobPoller(jobId);
 
-  // when video job finishes, set result
   if (jobResult && !result) {
     setResult(jobResult);
     setJobId(null);
@@ -32,19 +30,16 @@ export default function Home({ language, onChangeLanguage }) {
         const data = await checkText(value, language);
         setResult(data);
       }
-
       if (type === "image") {
         const data = await checkImage(value, language);
         setResult(data);
       }
-
       if (type === "video") {
         const data = await checkVideo(value, language);
-        setJobId(data.jobId);   // start polling
+        setJobId(data.jobId);
         setLoading(false);
-        return;                 // result comes via poller
+        return;
       }
-
     } catch (err) {
       setError(err.response?.data?.error || "Something went wrong. Please try again.");
     } finally {
@@ -59,50 +54,47 @@ export default function Home({ language, onChangeLanguage }) {
     setLoading(false);
   }
 
-  // ── Show result page ───────────────────────────────────────────────────────
   if (result) {
     return <Result result={result} language={language} onReset={handleReset} />;
   }
 
-  // ── Show video processing state ────────────────────────────────────────────
- if (jobId) {
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="max-w-md w-full">
-        <Loader
-          language={language}
-          messageKey={status === "processing" ? "loaderVideo" : "loaderText"}
-        />
-        {jobError && (
-          <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-4 text-center">
-            <p className="text-red-600 text-sm">{jobError}</p>
-            <button
-              onClick={handleReset}
-              className="mt-3 text-sm text-blue-500 hover:underline"
-            >
-              Try again
-            </button>
-          </div>
-        )}
+  if (jobId) {
+    return (
+      <div className="min-h-screen bg-[#FFF8F0] flex items-center justify-center px-4">
+        <div className="max-w-md w-full">
+          <Loader
+            language={language}
+            messageKey={status === "processing" ? "loaderVideo" : "loaderText"}
+          />
+          {jobError && (
+            <div className="mt-4 bg-red-50 border border-orange-100 rounded-2xl p-4 text-center">
+              <p className="text-red-600 text-sm">{jobError}</p>
+              <button
+                onClick={handleReset}
+                className="mt-3 text-sm text-[#FF6B00] hover:underline font-medium"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-  // ── Main home page ─────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-10">
+    <div className="min-h-screen bg-[#FFF8F0] px-4 py-10">
       <div className="max-w-xl mx-auto space-y-6">
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Zhenva</h1>
-            <p className="text-gray-400 text-sm">{t(language, "tagline")}</p>
+            <p className="text-[#FF6B00] text-sm font-medium">{t(language, "tagline")}</p>
           </div>
           <button
             onClick={onChangeLanguage}
-            className="text-xs text-gray-400 hover:text-blue-500 border border-gray-200 rounded-lg px-3 py-1.5 transition-all"
+            className="text-xs text-gray-500 hover:text-[#FF6B00] border border-orange-200 rounded-xl px-3 py-1.5 bg-orange-50 transition-all"
           >
             🌐 {language.charAt(0).toUpperCase() + language.slice(1)}
           </button>
@@ -117,7 +109,7 @@ export default function Home({ language, onChangeLanguage }) {
 
         {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+          <div className="bg-red-50 border border-orange-100 rounded-2xl p-4">
             <p className="text-red-600 text-sm">{error}</p>
           </div>
         )}

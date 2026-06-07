@@ -21,21 +21,24 @@ function formatResult(inputType, originalInput, language, claims, verdicts) {
       : worst;
   }, "TRUE");
 
+  // combine all explanations into one paragraph
+  const overallExplanation = verdicts
+    .map((v) => v.explanation)
+    .join(" ");
+
+  // collect all unique sources
+  const allSources = [...new Set(
+    verdicts.flatMap((v) => v.sources || [])
+  )].filter((url) => typeof url === "string" && url.startsWith("http"));
+
   return {
     overallVerdict,
     emoji: VERDICT_EMOJI[overallVerdict],
     color: VERDICT_COLOR[overallVerdict],
     language,
     inputType,
-    claims: verdicts.map((v) => ({
-      claim: v.claim,
-      verdict: v.verdict,
-      emoji: VERDICT_EMOJI[v.verdict],
-      color: VERDICT_COLOR[v.verdict],
-      explanation: v.explanation,
-      confidence: v.confidence,
-      sources: v.sources,
-    })),
+    overallExplanation,
+    sources: allSources,
     checkedAt: new Date().toISOString(),
   };
 }

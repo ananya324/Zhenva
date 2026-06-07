@@ -25,7 +25,7 @@ export default function VideoInput({ onSubmit, loading }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2 items-center bg-white border-2 border-gray-100 focus-within:border-blue-400 rounded-xl px-4 py-3 transition-all">
+      <div className="flex gap-2 items-center bg-orange-50 border-2 border-orange-100 focus-within:border-[#FF6B00] rounded-2xl px-4 py-3 transition-all">
         <span className="text-lg">🔗</span>
         <input
           type="url"
@@ -56,7 +56,7 @@ export default function VideoInput({ onSubmit, loading }) {
         {["YouTube", "Instagram Reels", "Facebook"].map((p) => (
           <span
             key={p}
-            className="text-xs px-2 py-1 bg-gray-100 text-gray-400 rounded-full"
+            className="text-xs px-3 py-1 bg-orange-50 text-[#FF6B00] border border-orange-200 rounded-full font-medium"
           >
             {p}
           </span>
@@ -71,7 +71,7 @@ export default function VideoInput({ onSubmit, loading }) {
         <button
           onClick={handleSubmit}
           disabled={!url.trim() || loading}
-          className="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-200 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-all"
+          className="px-6 py-2.5 bg-[#FF6B00] hover:bg-[#E05A00] disabled:bg-gray-200 disabled:cursor-not-allowed text-white text-sm font-bold rounded-2xl transition-all shadow-sm shadow-orange-200"
         >
           {loading ? "Processing..." : "Check Now"}
         </button>

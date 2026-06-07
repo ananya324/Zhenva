@@ -1,5 +1,3 @@
-import { t } from "../utils/translations";
-
 const LANGUAGES = [
   { code: "english", native: "English", label: "English" },
   { code: "hindi", native: "हिंदी", label: "Hindi" },
@@ -11,27 +9,27 @@ const LANGUAGES = [
 
 export default function Landing({ onSelect }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-      <div className="max-w-md w-full text-center">
+    <div className="min-h-screen bg-[#FFF8F0] flex flex-col items-center justify-center px-4">
+      <div className="max-w-md w-full">
 
         {/* Logo */}
-        <div className="mb-10">
-          <h1 className="text-5xl font-bold text-gray-900 tracking-tight">
-            Zhenva
-          </h1>
-          <p className="text-gray-400 mt-3 text-base">
-            {/* show in all languages since user hasn't picked yet */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#FF6B00] mb-4 shadow-lg">
+            <span className="text-3xl">🔍</span>
+          </div>
+          <h1 className="text-4xl font-bold text-gray-900">Zhenva</h1>
+          <p className="text-[#FF6B00] mt-2 font-medium">
             Fact-check anything in seconds
           </p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <p className="text-gray-800 text-lg font-semibold mb-1">
-            अपनी भाषा चुनें / Choose your language
+        <div className="bg-white rounded-3xl shadow-sm border border-orange-100 p-8">
+          <p className="text-gray-800 text-lg font-bold mb-1 text-center">
+            अपनी भाषा चुनें
           </p>
-          <p className="text-gray-400 text-sm mb-8">
-            Results and audio will be in this language
+          <p className="text-gray-400 text-sm mb-6 text-center">
+            Choose your language
           </p>
 
           <div className="grid grid-cols-2 gap-3">
@@ -39,9 +37,9 @@ export default function Landing({ onSelect }) {
               <button
                 key={lang.code}
                 onClick={() => onSelect(lang.code)}
-                className="flex flex-col items-center justify-center p-5 rounded-xl border-2 border-gray-100 hover:border-blue-500 hover:bg-blue-50 transition-all duration-150 cursor-pointer group"
+                className="flex flex-col items-center justify-center p-4 rounded-2xl border-2 border-orange-100 hover:border-[#FF6B00] hover:bg-orange-50 active:bg-orange-100 transition-all duration-150 cursor-pointer group"
               >
-                <span className="text-2xl font-semibold text-gray-800 group-hover:text-blue-600">
+                <span className="text-2xl font-bold text-gray-800 group-hover:text-[#FF6B00]">
                   {lang.native}
                 </span>
                 <span className="text-xs text-gray-400 mt-1">
@@ -52,8 +50,8 @@ export default function Landing({ onSelect }) {
           </div>
         </div>
 
-        <p className="text-gray-300 text-xs mt-6">
-          No account needed. Free to use.
+        <p className="text-center text-gray-300 text-xs mt-6">
+          No account needed · Free to use
         </p>
       </div>
     </div>

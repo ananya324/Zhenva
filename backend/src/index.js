@@ -38,17 +38,7 @@ app.use((err, req, res, next) => {
     error: err.message || "Something went wrong",
   });
 });
-// ─── Redis Check ─────────────────────────────────────────────────────────────
-const redisClient = new Redis(config.redisUrl);
 
-redisClient.on("connect", () => {
-  console.log("Redis connected");
-});
-
-redisClient.on("error", (err) => {
-  console.error("Redis connection failed:", err.message);
-  process.exit(1);   // stop server if Redis is down
-});
 
 mongoose
   .connect(config.mongoUri)
