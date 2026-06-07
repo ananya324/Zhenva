@@ -1,4 +1,4 @@
-# Zhenva — AI-Powered Fact Checking Platform
+# Zhenva - AI-Powered Fact Checking Platform
 
 A fact-checking web app built for non-tech-savvy Indian users. Paste a WhatsApp forward, upload a screenshot, or drop a video link — get a clear verdict in your language, with audio playback.
 
