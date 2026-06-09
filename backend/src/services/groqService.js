@@ -57,14 +57,29 @@ Return ONLY a raw JSON object, no markdown, no backticks, no explanation outside
 Evidence from trusted sources:
 ${evidence || "No evidence found."}
 
+Verdict rules — follow these strictly:
+- TRUE: claim is fully accurate with strong evidence. No important context missing.
+- FALSE: claim is factually wrong according to evidence.
+- MISLEADING: claim has some truth but omits important context, exaggerates, oversimplifies, or could cause harm if believed without qualification. Use this when something is "partially true but dangerous to believe as stated."
+- UNVERIFIED: no reliable evidence found either way.
+
+Examples of MISLEADING:
+- "Energy drinks improve performance" → MISLEADING (true for some people in some situations, but hides risks)
+- "Hot water kills viruses" → FALSE
+- "Vaccines cause autism" → FALSE
+- "The government announced ₹5000 for citizens" → needs verification
+
+Claim: "${claim}"
+
 Return a JSON object with exactly these keys:
 {
   "verdict": "TRUE" or "FALSE" or "MISLEADING" or "UNVERIFIED",
-  "reason": "one clear sentence in simple English explaining the verdict",
-  "explanation": "same reason explained in ${language} language. STRICT RULES: If language is hindi, write ONLY in Devanagari script (हिंदी), no Roman/English words at all. If language is tamil, write ONLY in Tamil script. If language is telugu, write ONLY in Telugu script. If language is bengali, write ONLY in Bengali script. If language is marathi, write ONLY in Devanagari script. If language is english, write in simple English. Never mix scripts.",
+  "reason": "one clear sentence in simple English explaining the verdict. If MISLEADING, explain what context is missing.",
   "confidence": "HIGH" or "MEDIUM" or "LOW",
-  "sources": ["https://actualurl.com", "https://anotherurl.com"] — ONLY include real URLs starting with https://. Never include numbered references like [1] or [2]. If no real URLs are available, return an empty array [].
-}`,
+  "sources": ["url1", "url2"]
+}
+
+IMPORTANT: verdict and reason must ALWAYS be in English regardless of anything else.`,
       },
     ],
     temperature: 0.1,
@@ -73,8 +88,9 @@ Return a JSON object with exactly these keys:
 
   const raw = response.choices[0].message.content.trim();
 
+  let parsed;
   try {
-    return JSON.parse(raw);
+    parsed = JSON.parse(raw);
   } catch {
     console.error("generateVerdict parse error:", raw);
     return {
@@ -85,8 +101,39 @@ Return a JSON object with exactly these keys:
       sources: [],
     };
   }
-}
 
+  // separate call to translate reason into user's language
+  let explanation = parsed.reason;
+
+  if (language !== "english") {
+    const translateResponse = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "user",
+          content: `Translate this text into ${language} language only. 
+Use proper ${language} script only — no Roman letters, no English words mixed in.
+Keep it simple and easy to understand for a common person.
+Return ONLY the translated text, nothing else.
+
+Text: "${parsed.reason}"`,
+        },
+      ],
+      temperature: 0.1,
+      max_tokens: 400,
+    });
+
+    explanation = translateResponse.choices[0].message.content.trim();
+  }
+
+  return {
+    verdict: parsed.verdict,
+    reason: parsed.reason,
+    explanation,
+    confidence: parsed.confidence,
+    sources: parsed.sources || [],
+  };
+}
 async function extractTextFromImage(base64Image, mediaType = "image/jpeg") {
   const response = await groq.chat.completions.create({
     model: "meta-llama/llama-4-scout-17b-16e-instruct",
